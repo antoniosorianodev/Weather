@@ -2,10 +2,10 @@
 
 window.onload = () => {
     const myDropdown = document.querySelector("#cityDropdown");
-    const myTableBody = document.querySelector("#cityTableBody");
+    const myTableBody = document.querySelector("#weatherTableBody");
 
     populateDropdown(myDropdown);
-    myDropdown.addEventListener("change", (event) => displayWeatherData(event.target, myTableBody));
+    myDropdown.addEventListener("change", (event) => populateWeatherTable(event.target, myTableBody));
 }
 
 function populateDropdown(dropdown) {
@@ -19,7 +19,7 @@ function populateDropdown(dropdown) {
     });
 }
 
-async function displayWeatherData(dropdown, tbody) {
+async function populateWeatherTable(dropdown, tbody) {
     try {
         tbody.innerHTML = "";
         let selectedCity = cities[(dropdown.selectedIndex - 1)];
@@ -30,32 +30,30 @@ async function displayWeatherData(dropdown, tbody) {
         }
         let data = await response.json();
         let forecastUrl = data.properties.forecast;
-        displayWeatherDataV2(dropdown, tbody, forecastUrl);
+        createWeatherTableRows(dropdown, tbody, forecastUrl);
     } catch (error) {
         console.log(error);
     }
 }
 
-async function displayWeatherDataV2(dropdown, tbody, url) {
+async function createWeatherTableRows(dropdown, tbody, url) {
     let response = await fetch(url, {});
     let data = await response.json();
     let weatherArray = data.properties.periods;
-    console.log(data.properties.periods);
     weatherArray.forEach((period) => {
-        console.log(tbody);
         let newRow = tbody.insertRow();
-        createTableCell(newRow, period, "number");
-        createTableCell(newRow, period, "name");
-        createTableCell(newRow, period, "temperature");
-        createTableCell(newRow, period, "temperatureUnit");
-        createTableCell(newRow, period, "windSpeed");
-        createTableCell(newRow, period, "windDirection");
-        createTableCell(newRow, period, "shortForecast");
+        createWeatherTableCell(newRow, period, "number");
+        createWeatherTableCell(newRow, period, "name");
+        createWeatherTableCell(newRow, period, "temperature");
+        createWeatherTableCell(newRow, period, "temperatureUnit");
+        createWeatherTableCell(newRow, period, "windSpeed");
+        createWeatherTableCell(newRow, period, "windDirection");
+        createWeatherTableCell(newRow, period, "shortForecast");
         tbody.appendChild(newRow);
     });
 }
 
-function createTableCell(tableRow, data, key) {
+function createWeatherTableCell(tableRow, data, key) {
     let newCell = tableRow.insertCell();
     newCell.innerHTML = data[`${key}`];
 }
