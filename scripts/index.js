@@ -44,20 +44,24 @@ async function populateWeatherTable(dropdown, table, tbody) {
 }
 
 async function createWeatherTableRows(dropdown, tbody, url) {
-    let response = await fetch(url, {});
-    let data = await response.json();
-    let weatherArray = data.properties.periods;
-    weatherArray.forEach((period) => {
-        let newRow = tbody.insertRow();
-        createWeatherTableCell(newRow, period, "number");
-        createWeatherTableCell(newRow, period, "name");
-        createWeatherTableCell(newRow, period, "temperature");
-        createWeatherTableCell(newRow, period, "temperatureUnit");
-        createWeatherTableCell(newRow, period, "windSpeed");
-        createWeatherTableCell(newRow, period, "windDirection");
-        createWeatherTableCell(newRow, period, "shortForecast");
-        tbody.appendChild(newRow);
-    });
+    try {
+        let response = await fetch(url, {});
+        let data = await response.json();
+        let weatherArray = data.properties.periods;
+        weatherArray.forEach((period) => {
+            let newRow = tbody.insertRow();
+            createWeatherTableCell(newRow, period, "number");
+            createWeatherTableCell(newRow, period, "name");
+            createWeatherTableCell(newRow, period, "temperature");
+            createWeatherTableCell(newRow, period, "temperatureUnit");
+            createWeatherTableCell(newRow, period, "windSpeed");
+            createWeatherTableCell(newRow, period, "windDirection");
+            createWeatherTableCell(newRow, period, "shortForecast");
+            tbody.appendChild(newRow);
+        });
+    } catch (error) {
+        console.log(error);
+    }
 }
 
 function createWeatherTableCell(tableRow, data, key) {
