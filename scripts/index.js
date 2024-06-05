@@ -2,10 +2,12 @@
 
 window.onload = () => {
     const myDropdown = document.querySelector("#cityDropdown");
+    const myTable = document.querySelector("#theTable");
     const myTableBody = document.querySelector("#weatherTableBody");
 
+    myTable.style.display = "none";
     populateDropdown(myDropdown);
-    myDropdown.addEventListener("change", (event) => populateWeatherTable(event.target, myTableBody));
+    myDropdown.addEventListener("change", (event) => populateWeatherTable(event.target, myTable, myTableBody));
 }
 
 function populateDropdown(dropdown) {
@@ -19,18 +21,23 @@ function populateDropdown(dropdown) {
     });
 }
 
-async function populateWeatherTable(dropdown, tbody) {
+async function populateWeatherTable(dropdown, table, tbody) {
     try {
-        tbody.innerHTML = "";
-        let selectedCity = cities[(dropdown.selectedIndex - 1)];
-        let response = await fetch(`https://api.weather.gov/points/${selectedCity.latitude},${selectedCity.longitude}`, {});
-        if (!response.ok) {
-            outputField.innerHTML = "Error";
-            throw new Error("Api machine broke");
+        if (dropdown.selectedIndex === 0) {
+            table.style.display = "none";
+        } else {
+            tbody.innerHTML = "";
+            let selectedCity = cities[(dropdown.selectedIndex - 1)];
+            let response = await fetch(`https://api.weather.gov/points/${selectedCity.latitude},${selectedCity.longitude}`, {});
+            if (!response.ok) {
+                outputField.innerHTML = "Error";
+                throw new Error("Api machine broke");
+            }
+            let data = await response.json();
+            let forecastUrl = data.properties.forecast;
+            createWeatherTableRows(dropdown, tbody, forecastUrl);
+            table.style.display = "block";
         }
-        let data = await response.json();
-        let forecastUrl = data.properties.forecast;
-        createWeatherTableRows(dropdown, tbody, forecastUrl);
     } catch (error) {
         console.log(error);
     }
