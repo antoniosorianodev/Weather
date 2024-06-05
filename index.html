@@ -8,9 +8,26 @@
 </head>
 
 <body>
+    <h3>Weather Forecast:</h3>
+    <label for="cityDropdown"></label>
     <select id="cityDropdown">
         <option>-- Select a City --</option>
     </select>
+
+    <table>
+        <thead>
+            <th>Number:</th>
+            <th>Name:</th>
+            <th>Temperature:</th>
+            <th>Temperature Unit:</th>
+            <th>Wind Speed:</th>
+            <th>Wind Direcition:</th>
+            <th>Short Forecast:</th>
+        </thead>
+        <tbody id="cityTableBody">
+
+        </tbody>
+    </table>
 
     <script src="./scripts/cities.js"></script>
     <script src="./scripts/index.js"></script>
