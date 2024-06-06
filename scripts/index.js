@@ -1,43 +1,19 @@
 "use strict"
 
 window.onload = () => {
-    const currentPosition = navigator.geolocation;
     const myDropdown = document.querySelector("#cityDropdown");
-    currentPosition.getCurrentPosition(async (currentPosition) => {
-        const myDropdown = document.querySelector("#cityDropdown");
-
-        const crd = currentPosition.coords;
-        let currentLat = crd.latitude.toFixed(4);
-        let currentLng = crd.longitude.toFixed(4);
-
-        let response = await fetch(`https://api.weather.gov/points/${currentLat},${currentLng}`, {});
-        let data = await response.json();
-
-        let longPathToData = data.properties.relativeLocation.properties;
-
-        let newCity = {
-            name: `Current Location (${longPathToData.city}, ${longPathToData.state})`,
-            latitude: currentLat,
-            longitude: currentLng
-        }
-
-        cities.unshift(newCity);
-        populateDropdown(myDropdown);
-    }, async (error) => {
-        console.log(error);
-        populateDropdown(myDropdown);
-    });
-
     const myTable = document.querySelector("#theTable");
     const myTableBody = document.querySelector("#weatherTableBody");
+
+    findUserLocation(myDropdown);
 
     myTable.style.display = "none";
     myDropdown.addEventListener("change", (event) => populateWeatherTable(event.target, myTable, myTableBody));
 }
 
-function populateDropdown(dropdown) {
-    cities.forEach((city) => {
-        let newOption = document.createElement("option");
+function populateDropdown(dropdown, array) {
+    array.forEach((city) => {
+        const newOption = document.createElement("option");
         newOption.textContent = city.name;
 
         dropdown.appendChild(newOption);
@@ -50,14 +26,14 @@ async function populateWeatherTable(dropdown, table, tbody) {
             table.style.display = "none";
         } else {
             tbody.innerHTML = "";
-            let selectedCity = cities[(dropdown.selectedIndex - 1)];
-            let response = await fetch(`https://api.weather.gov/points/${selectedCity.latitude},${selectedCity.longitude}`, {});
+            const selectedCity = cities[(dropdown.selectedIndex - 1)];
+            const response = await fetch(`https://api.weather.gov/points/${selectedCity.latitude},${selectedCity.longitude}`, {});
             if (!response.ok) {
                 outputField.innerHTML = "Error";
                 throw new Error("Api machine broke");
             }
-            let data = await response.json();
-            let forecastUrl = data.properties.forecast;
+            const data = await response.json();
+            const forecastUrl = data.properties.forecast;
             createWeatherTableRows(dropdown, tbody, forecastUrl);
             table.style.display = "block";
         }
@@ -68,11 +44,11 @@ async function populateWeatherTable(dropdown, table, tbody) {
 
 async function createWeatherTableRows(dropdown, tbody, url) {
     try {
-        let response = await fetch(url, {});
-        let data = await response.json();
-        let weatherArray = data.properties.periods;
+        const response = await fetch(url, {});
+        const data = await response.json();
+        const weatherArray = data.properties.periods;
         weatherArray.forEach((period) => {
-            let newRow = tbody.insertRow();
+            const newRow = tbody.insertRow();
             createWeatherTableCell(newRow, period, "number");
             createWeatherTableCell(newRow, period, "name");
             createWeatherTableCell(newRow, period, "temperature");
@@ -88,6 +64,36 @@ async function createWeatherTableRows(dropdown, tbody, url) {
 }
 
 function createWeatherTableCell(tableRow, data, key) {
-    let newCell = tableRow.insertCell();
+    const newCell = tableRow.insertCell();
     newCell.innerHTML = data[`${key}`];
+}
+
+function findUserLocation(dropdown) {
+    const currentPosition = navigator.geolocation;
+
+    // the async that uses currentPosition is the success condition
+    currentPosition.getCurrentPosition(async (currentPosition) => {
+        const crd = currentPosition.coords;
+
+        // removed .toFixed(4) since my data gets trimmed at the endpoint anyway and this preserves precision
+        const currentLat = crd.latitude
+        const currentLng = crd.longitude
+
+        const response = await fetch(`https://api.weather.gov/points/${currentLat},${currentLng}`, {});
+        const data = await response.json();
+
+        const longPathToData = data.properties.relativeLocation.properties;
+
+        const newCity = {
+            name: `Current Location (${longPathToData.city}, ${longPathToData.state})`,
+            latitude: currentLat,
+            longitude: currentLng
+        }
+
+        cities.unshift(newCity);
+        populateDropdown(dropdown, cities);
+        // this async is the error handling, optional but I want it for when the user says no to sharing their location
+    }, (error) => {
+        populateDropdown(dropdown, cities);
+    });
 }
