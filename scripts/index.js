@@ -1,12 +1,37 @@
 "use strict"
 
 window.onload = () => {
+    const currentPosition = navigator.geolocation;
     const myDropdown = document.querySelector("#cityDropdown");
+    currentPosition.getCurrentPosition(async (currentPosition) => {
+        const myDropdown = document.querySelector("#cityDropdown");
+
+        const crd = currentPosition.coords;
+        let currentLat = crd.latitude.toFixed(4);
+        let currentLng = crd.longitude.toFixed(4);
+
+        let response = await fetch(`https://api.weather.gov/points/${currentLat},${currentLng}`, {});
+        let data = await response.json();
+
+        let longPathToData = data.properties.relativeLocation.properties;
+
+        let newCity = {
+            name: `Current Location (${longPathToData.city}, ${longPathToData.state})`,
+            latitude: currentLat,
+            longitude: currentLng
+        }
+
+        cities.unshift(newCity);
+        populateDropdown(myDropdown);
+    }, async (error) => {
+        console.log(error);
+        populateDropdown(myDropdown);
+    });
+
     const myTable = document.querySelector("#theTable");
     const myTableBody = document.querySelector("#weatherTableBody");
 
     myTable.style.display = "none";
-    populateDropdown(myDropdown);
     myDropdown.addEventListener("change", (event) => populateWeatherTable(event.target, myTable, myTableBody));
 }
 
@@ -14,8 +39,6 @@ function populateDropdown(dropdown) {
     cities.forEach((city) => {
         let newOption = document.createElement("option");
         newOption.textContent = city.name;
-        // I'm unsure if I need this line is required, since I will never use the value property
-        newOption.value = "";
 
         dropdown.appendChild(newOption);
     });
